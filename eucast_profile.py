@@ -76,24 +76,24 @@ def check_mic(mic1,mic2,mic_type):
             m2a = mic2.split('/')[0]
             m2b = mic2.split('/')[1]
             #print(m1a,m1b,m2a,m2b,mic_type)
-            if (mic_type=='i' and (float(m1a)<=float(m2a) and float(m1b)<=float(m2b))):
-                m_type='Intermediate'
-            elif (mic_type=='r' and (float(m1a)>float(m2a) and float(m1b)==float(m2b))):
-                m_type='Resistant'
-            elif (mic_type=='s' and (float(m1a)<=float(m2a) and float(m1b)<=float(m2b))):
+            if (mic_type=='s' and (float(m1a)<=float(m2a) and float(m1b)==float(m2b))):
                 m_type='Susceptible'
+            elif (mic_type=='r' and (float(m1a)>float(m2a))):
+                m_type='Resistant'
+            elif (mic_type=='i' and (float(m1a)==float(m2a) and float(m1b)==float(m2b))):
+                m_type='Intermediate'
             else:
                 m_type='Strain could not be classified'
         elif '-' in mic2:
                 m_type='Strain could not be classified'
         else:
             m2a=mic2
-            if (mic_type=='i' and (float(m1a)<=float(m2a))):
-                m_type='Intermediate'
-            elif (mic_type=='s' and (float(m1a)<=float(m2a))):
+            if (mic_type=='s' and (float(m1a)<=float(m2a))):
                 m_type='Susceptible'
-            elif (mic_type=='r' and (float(m1a)>=float(m2a))):
+            elif (mic_type=='r' and (float(m1a)>float(m2a))):
                 m_type='Resistant'
+            elif (mic_type=='i' and (float(m1a)==float(m2a))):
+                m_type='Intermediate'
             else:
                 m_type='Strain could not be classified'        
     except IndexError:

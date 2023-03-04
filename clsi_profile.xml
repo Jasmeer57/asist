@@ -1,84 +1,91 @@
-<tool id="clsi_profile" name="CLSI Profile" version="0.1.7" python_template_version="3.5">
-    <description>MIC profile using CLSI MIC breakpoints</description>
-    <requirements>
-        <requirement type="package">pandas</requirement>
-    </requirements>
-    <command detect_errors="exit_code"><![CDATA[
-	#if $input2.type_selector == "clsi_file"
-		python "${__tool_directory__}/clsi_profile.py" "$input1" "${__tool_directory__}/$input2.clsi1" "$output1"
-	#else
-		python "${__tool_directory__}/clsi_profile.py" "$input1" "$input2.clsi2" "$output1"
-	#end if
-    ]]></command>
-    <inputs>
-   	
-   	<param name="input1" type="data" format="csv" label="Input file of Antimicrobial Susceptibility Testing (AST) MIC values for strains" help="Input AST file in CSV format (Please see example given below)"></param>
-   	
-   	<conditional name="input2">
-   		<param name="type_selector" type="select" label="Choose MIC Breakpoints">
-   			<option value="clsi_file">CLSI MIC breakpoints</option>
-   			<option value="user_file" >User define MIC breakpoints</option>
-   		</param>
-   		<when value="clsi_file">
-   			<param name="clsi1" type="select" format="csv" label="CSV File">
-				<option value="test-data/clsi.csv" selected="true">CLSI MIC breakpoints for Bacteria (2020)</option>
-   			</param>
-   		</when>
-   		<when value="user_file">
-   			<param name="clsi2" type="data" format="csv" label="CSV File"></param>
-   		</when>
+<tool id="clsi_profile" name="ASIST_CLSI_Breakpoint" version="0.1.8">
+  <description>CLSI MIC breakpoints profile</description>
+  <!--command interpreter="python">clsi_profile.py "$input" "$clsi" "$output"</command-->
+
+<command detect_errors="exit_code">
+    <![CDATA[
+    #if $input2.type_selector == "eucast_file"
+        python "${__tool_directory__}/eucast_profile.py" "$input" "$input2.clsi" "$output"
+    #else
+        python "${__tool_directory__}/clsi_profile.py" "$input" "$input2.clsi" "$output"
+    #end if
+    ]]>
+</command>
+
+<inputs>
+
+	<param name="input" type="data" format="csv" label="Input file of Antimicrobial Susceptibility Testing (AST) MIC values for strains" help="Input AST file in CSV format (Please see example given below)"></param>
+
+	<conditional name="input2">
+		<param name="type_selector" type="select" label="Choose MIC Breakpoints">
+			<option value="clsi_file">CLSI MIC breakpoints</option>
+			<option value="eucast_file" >EUCAST MIC breakpoints</option>
+			<option value="user_file" >User define MIC breakpoints</option>
+		</param>
+		<when value="clsi_file">
+			<param name="clsi" type="select" format="csv" label="CSV File">
+				<option value="/sandisk/ab-openlab/asist_galaxy/galaxy/tools/asist/CLSI/CLSI-2022.csv" selected="true">CLSI MIC breakpoints for Bacteria (2022)</option>
+			</param>
+		</when>
+		<when value="eucast_file">
+			<param name="clsi" type="select" format="csv" label="CSV File">
+				<option value="/sandisk/ab-openlab/asist_galaxy/galaxy/tools/asist/CLSI/EUCAST-2022.csv">EUCAST MIC breakpoints for Bacteria (2022)</option>
+			</param>
+		</when>
+		<when value="user_file">
+			<param name="clsi" type="data" format="csv" label="CSV File"></param>
+		</when>
 	</conditional>
-   	
-    </inputs> 
-    <!--inputs>
-        <param type="data" name="input1" format="csv" />
-        <param type="data" name="input2" format="csv" />
-    </inputs-->
-    <outputs>
-        <data name="output1" format="csv" />
-    </outputs>
-    <tests>
-        <test>
-            <param name="input1" value="input.csv"/>
-            <param name="input2" value="clsi.csv"/>
-            <output name="output1" file="output.csv"/>
-        </test>
-    </tests>
-    <help><![CDATA[
-        Input CSV file example:
-	    Strain name,Antibiotics,MIC,unit
 
-	    Acinetobacter baumannii A85,Colistin,0.1,mg/L
-	   
-	    Acinetobacter baumannii strain FDA-CDC-AR_0306,polymyxin B,1,mg/L
+</inputs>
 
-	    Acinetobacter baumannii strain FDA-CDC-AR_0307,polymyxin B,8,mg/L
+<outputs>
+  <data name="output" format="csv"/>
+</outputs>
 
-	    Acinetobacter baumannii strain FDA-CDC-AR_0308,polymyxin B,4,mg/L
+<help>
 
-	    Acinetobacter baumannii strain MRSN7834,amoxicillin/clavulanic acid, 16/8,mg/L
+.. class:: infomark
 
-	Output CSV file example:
-	    Strain name,Colistin,Polymyxin B
+**USAGE:** Please provide the input CSV file containing AST MIC values for the tested strains.
 
-	    Acinetobacter baumannii A85,Strain could not be classified,NA
+**Input AST file example:** ::
 
-	    Acinetobacter baumannii strain FDA-CDC-AR_0306,NA,Strain could not be classified
+	Strain name,Antibiotics,MIC,Unit
+	Acinetobacter baumannii A85,Colistin,0.1,mg/L
+	Acinetobacter baumannii AB307-0294,Imipenem,1,mg/L
+	Acinetobacter baumannii AB307-0294,Ampicillin,0,mg/L
+	Acinetobacter baumannii ORAB01,piperacillin/tazobactam,>64/4,mg/L
+	Acinetobacter baumannii strain MRSN7100,amoxicillin/clavulanic acid, 16/8,mg/L
+	Acinetobacter baumannii AB307-0294,piperacillin/tazobactam,0,mg/L
+	Acinetobacter baumannii DU202,Ampicillin/sulbactam,>=0.3,mg/L
+	------------------------------------------------------------------------------------
+	Note: Antibiotics must not have more than one MIC value for same Strain name. All MIC
+	units must be same as MIC breakpoints. eg. mg/L.
+	
+**Input CLSI MIC breakpoints file example:** ::
 
-	    Acinetobacter baumannii strain FDA-CDC-AR_0307,NA,Resistant
+	Antibiotics,Susceptible,Resistant, Intermediate
+	Colistin,-,≥ 4,2
+	Imipenem,≤ 2,≥ 8,4
+	Ciprofloxacin,≤ 1,≥ 4,2
+	Piperacillin/ tazobactam,≤ 16/4,≥ 128/4,32/4-64/4
+	Ticarcillin/ clavulanic acid,≤ 16/2,≥ 128/2,32/2-64/2
+	------------------------------------------------------------------------------------
+	Note: All MIC units must be same. eg. mg/L.
+	
+**Output example:** ::
 
-	    Acinetobacter baumannii strain FDA-CDC-AR_0308,NA,Resistant
-    ]]></help>
-    <citations>
-            <citation type="bibtex">@ARTICLE{Sharma_2021,
-                        author = {Tina Sharma and Rakesh Kumar and Anshu Bhardwaj},
-                        title = {ASIST: Antimicrobial Susceptibility standards based phenotypes},
-                        journal = {},
-                        year = {2021},
-                        volume = {},
-                        pages = {},
-                        url = {https://ab-openlab.csir.res.in/asist}
-                    }
-            </citation>
-    </citations>	    
+	Strain name,Resistance_phenotype,Imipenem,Piperacillin/tazobactam,Colistin
+	Acinetobacter baumannii A85,,NA,NA,Susceptible
+	Acinetobacter baumannii AB307-0294,,Susceptible,Strain could not be classified,NA
+	Acinetobacter baumannii ORAB01,,NA,Intermediate,NA
+	------------------------------------------------------------------------------------
+	Note: Only CLSI MIC breakpoints based antibiotics are present in the output.
+	'NA' :- Antibiotic is 'Not Available'
+
+** Default MIC sign for comparing Susceptible breakpoints with measurement value is "≤"**
+** Default MIC sign for comparing Resistant breakpoints with measurement value is "≥"**
+</help>
+
 </tool>
